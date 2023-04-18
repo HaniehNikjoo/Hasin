@@ -1,4 +1,4 @@
-package ir.omidpayment.hasin
+package ir.hasin.mani
 
 import org.junit.Test
 

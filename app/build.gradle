@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace 'ir.omidpayment.hasin'
+    namespace 'ir.hasin.mani'
     compileSdk 33
 
     defaultConfig {
-        applicationId "ir.omidpayment.hasin"
+        applicationId "ir.hasin.mani"
         minSdk 24
         targetSdk 33
         versionCode 1
