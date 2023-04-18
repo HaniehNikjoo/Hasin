@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id("com.google.dagger.hilt.android")
     id("kotlin-kapt")
+    id 'kotlin-parcelize'
 }
 
 android {
@@ -17,6 +18,22 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    flavorDimensions = ["version"]
+    productFlavors {
+        production {
+            buildConfigField "String", "BASE_URL", "\"https://api.themoviedb.org/3/movie/\""
+            buildConfigField "String", "API_KEY", "\"55957fcf3ba81b137f8fc01ac5a31fb5\""
+            dimension "version"
+        }
+        develop {
+            buildConfigField "String", "BASE_URL", "\"https://api.themoviedb.org/3/movie/\""
+            buildConfigField "String", "API_KEY", "\"55957fcf3ba81b137f8fc01ac5a31fb5\""
+            dimension "version"
+            applicationIdSuffix ".develop"
+            versionNameSuffix "-develop"
+        }
     }
 
     buildTypes {
