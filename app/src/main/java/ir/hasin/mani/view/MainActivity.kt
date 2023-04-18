@@ -9,8 +9,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.FragmentContainerView
 import androidx.navigation.fragment.NavHostFragment
+import dagger.hilt.android.AndroidEntryPoint
 import ir.hasin.mani.R
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private val navHostFragmentId = ViewCompat.generateViewId()
 
