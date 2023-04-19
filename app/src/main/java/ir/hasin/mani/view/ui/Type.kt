@@ -7,7 +7,7 @@ import androidx.compose.ui.text.font.FontWeight
 import ir.hasin.mani.R
 
 // Set of Material typography styles to start with
-val iransansFamily = FontFamily(
+val iranSansFamily = FontFamily(
     Font(R.font.iranyekanmobilethin, FontWeight.Thin),
     Font(R.font.iranyekanmobilelight, FontWeight.Light),
     Font(R.font.iranyekanmobileregular, FontWeight.Normal),
@@ -16,5 +16,5 @@ val iransansFamily = FontFamily(
 )
 
 val Typography = Typography(
-    defaultFontFamily = iransansFamily
+    defaultFontFamily = iranSansFamily
 )

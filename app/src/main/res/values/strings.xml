@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Hasin</string>
+    <string name="popular">Popular</string>
+    <string name="not_found_items">Nothing found</string>
 </resources>
