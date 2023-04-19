@@ -39,7 +39,8 @@ class MainFragment : Fragment() {
                 }
                 Column() {
                     Header(title = getString(R.string.popular))
-                    MovieList(items = item,
+                    MovieList(
+                        items = item?.results ?: emptyList(),
                         isLoadingItems = observeOnList.status == Status.LOADING,
                         onItemClicked = {
 //                    val bundle = Bundle()

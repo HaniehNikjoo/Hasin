@@ -23,7 +23,7 @@ import ir.hasin.mani.R
 @Composable
 fun Header(title: String) {
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-        Row(Modifier.background(Color.DarkGray)) {
+        Row(Modifier.background(Color(0xFF222222))) {
             Row(Modifier.padding(horizontal = 12.dp, vertical = 13.dp)) {
                 Text(
                     text = title,

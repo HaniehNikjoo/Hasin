@@ -36,7 +36,8 @@ class MainViewModel @Inject constructor(
                     (it as? HttpException)?.response()?.errorBody()?.string(),
                     ErrorResponse::class.java
                 )
-                _resMovieList.value = (Resource.error(errorResponse.status_message))
+                _resMovieList.value =
+                    (Resource.error(errorResponse?.status_message ?: it.message))
             }
         }
     }

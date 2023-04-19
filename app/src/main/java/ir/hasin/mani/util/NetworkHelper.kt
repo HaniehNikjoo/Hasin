@@ -2,35 +2,36 @@ package ir.hasin.mani.util
 
 import com.google.gson.GsonBuilder
 import ir.hasin.mani.BuildConfig
-import okhttp3.*
+import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 fun getOkHttpClient() = when {
     BuildConfig.DEBUG -> {
         val interceptor = HttpLoggingInterceptor()
         interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
-        OkHttpClient.Builder().addInterceptor(interceptor).addInterceptor(
-            AuthenticationInterceptor()
-        ).connectTimeout(60, TimeUnit.SECONDS).readTimeout(60, TimeUnit.SECONDS).build()
+        OkHttpClient.Builder().addInterceptor(interceptor).addInterceptor { chain ->
+            val request = chain.request().newBuilder()
+            val originalHttpUrl = chain.request().url
+            val url = originalHttpUrl.newBuilder().addQueryParameter("api_key", BuildConfig.API_KEY)
+                .build()
+            request.url(url)
+            return@addInterceptor chain.proceed(request.build())
+        }.build()
     }
     else -> {
         OkHttpClient.Builder().connectTimeout(60, TimeUnit.SECONDS)
-            .readTimeout(60, TimeUnit.SECONDS).addInterceptor(AuthenticationInterceptor()).build()
-    }
-}
-
-class AuthenticationInterceptor() : Interceptor {
-
-    @Throws(IOException::class)
-    override fun intercept(chain: Interceptor.Chain): Response {
-        val request = chain.request()
-        val authenticatedRequest =
-            request.newBuilder().header("api_key", BuildConfig.API_KEY).build()
-        return chain.proceed(authenticatedRequest)
+            .readTimeout(60, TimeUnit.SECONDS).addInterceptor { chain ->
+                val request = chain.request().newBuilder()
+                val originalHttpUrl = chain.request().url
+                val url =
+                    originalHttpUrl.newBuilder().addQueryParameter("api_key", BuildConfig.API_KEY)
+                        .build()
+                request.url(url)
+                return@addInterceptor chain.proceed(request.build())
+            }.build()
     }
 }
 

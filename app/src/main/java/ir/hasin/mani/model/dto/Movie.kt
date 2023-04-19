@@ -12,11 +12,12 @@ data class MovieListResponse(
     @SerializedName("total_results") val total_results: String,
 ) : Parcelable
 
+
 @Parcelize
 data class Result(
     @SerializedName("adult") val adult: String,
     @SerializedName("backdrop_path") val backdrop_path: String,
-    @SerializedName("genre_ids") val genre_ids: String,
+    @SerializedName("genres") val genres: Genre,
     @SerializedName("id") val id: String,
     @SerializedName("original_language") val original_language: String,
     @SerializedName("original_title") val original_title: String,
@@ -28,4 +29,10 @@ data class Result(
     @SerializedName("video") val video: String,
     @SerializedName("vote_average") val vote_average: String,
     @SerializedName("vote_count") val vote_count: String,
+) : Parcelable
+
+@Parcelize
+data class Genre(
+    @SerializedName("id") val id: String,
+    @SerializedName("name") val name: String
 ) : Parcelable
