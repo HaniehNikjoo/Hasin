@@ -128,7 +128,7 @@ fun MovieItem(
             model = "https://image.tmdb.org/t/p/w500/${item.poster_path}",
             contentDescription = null,
             contentScale = ContentScale.Fit,
-            modifier = Modifier.fillMaxHeight(.3f).fillMaxWidth()
+            modifier = Modifier.fillMaxHeight(.33f).fillMaxWidth()
         ) {
             it.thumbnail(
                 requestBuilder.load(R.drawable.ic_place_holder)
