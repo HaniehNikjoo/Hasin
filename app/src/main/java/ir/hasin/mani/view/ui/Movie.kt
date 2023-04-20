@@ -21,73 +21,100 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
 import com.bumptech.glide.Glide
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.google.gson.Gson
 import ir.hasin.mani.R
-import ir.hasin.mani.model.dto.Result
+import ir.hasin.mani.model.dto.ErrorResponse
+import ir.hasin.mani.model.dto.MovieResult
+import retrofit2.HttpException
 
 @Composable
 fun MovieList(
-    items: List<Result>,
+    items: LazyPagingItems<MovieResult>,
     onItemClicked: ((String) -> Unit)? = null,
-    isLoadingItems: Boolean = true,
-//    onNextPageLoadRequest: () -> Unit = {},
 ) {
-    Box(
-        modifier = Modifier
-            .background(
-                Color(0xFF222222)
-            )
-            .fillMaxHeight()
-    ) {
-        if (items.isEmpty() && !isLoadingItems) Text(
-            text = stringResource(id = R.string.not_found_items),
-            textAlign = TextAlign.Center,
+    Column {
+        Header(title = stringResource(R.string.popular))
+        Box(
             modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .align(Alignment.Center),
-            color = Color.LightGray
-        )
-        else Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFF222222))
+                .background(
+                    Color(0xFF222222)
+                )
+                .fillMaxHeight()
         ) {
-
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 128.dp),
-                modifier = Modifier
-                    .wrapContentHeight()
-                    .fillMaxWidth()
-                    .background(color = Color(0xFF222222))
-                    .padding(bottom = 12.dp)
-                    .align(Alignment.Center),
-            ) {
-                items(items.size) { index ->
-                    if (index < items.size) MovieItem(
-                        items[index], onItemClicked = onItemClicked
-                    )
+            if (items.itemCount == 0 && items.loadState.refresh != LoadState.Loading) {
+                var message: String? = null
+                items.apply {
+                    when {
+                        loadState.refresh is LoadState.Error -> {
+                            val e = loadState.refresh as LoadState.Error
+                            val errorResponse = Gson().fromJson(
+                                (e.error as? HttpException)?.response()?.errorBody()?.string(),
+                                ErrorResponse::class.java
+                            )
+                            message = errorResponse?.status_message
+                        }
+                        loadState.append is LoadState.Error -> {
+                            val e = loadState.refresh as LoadState.Error
+                            val errorResponse = Gson().fromJson(
+                                (e.error as? HttpException)?.response()?.errorBody()?.string(),
+                                ErrorResponse::class.java
+                            )
+                            message = errorResponse?.status_message
+                        }
+                    }
                 }
+                Text(
+                    text = message ?: stringResource(id = R.string.not_found_items),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .align(Alignment.Center),
+                    color = Color.LightGray
+                )
+            } else Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFF222222))
+            ) {
+                LazyVerticalGrid(columns = GridCells.Fixed(count = 3),
+                    modifier = Modifier
+                        .wrapContentHeight()
+                        .fillMaxWidth()
+                        .background(color = Color(0xFF222222))
+                        .padding(bottom = 12.dp)
+                        .align(Alignment.Center),
+                    content = {
+                        items(items.itemCount) { index ->
+                            items[index]?.let {
+                                MovieItem(
+                                    it, onItemClicked = onItemClicked
+                                )
+                            }
+                        }
+                    })
             }
+            if (items.loadState.refresh == LoadState.Loading) CircularProgressIndicator(
+                modifier = Modifier
+                    .size(60.dp)
+                    .padding(10.dp)
+                    .align(Alignment.Center)
+                    .wrapContentSize(), color = Color.White
+            )
         }
-        if (isLoadingItems) CircularProgressIndicator(
-            modifier = Modifier
-                .size(60.dp)
-                .padding(10.dp)
-                .align(Alignment.Center)
-                .wrapContentSize(),
-            color = Color.White
-        )
     }
 }
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun MovieItem(
-    item: ir.hasin.mani.model.dto.Result, onItemClicked: ((String) -> Unit)? = null
+    item: MovieResult, onItemClicked: ((String) -> Unit)? = null
 ) {
     val requestBuilder = Glide.with(LocalView.current).asDrawable()
     Column(
@@ -96,16 +123,15 @@ fun MovieItem(
             .border(2.dp, Color(0xFF222222))
             .clickable {
                 onItemClicked?.invoke(item.id)
-            }
-    ) {
+            }) {
         GlideImage(
             model = "https://image.tmdb.org/t/p/w500/${item.poster_path}",
             contentDescription = null,
             contentScale = ContentScale.Fit,
-            modifier = Modifier.wrapContentSize()
+            modifier = Modifier.fillMaxHeight(.3f).fillMaxWidth()
         ) {
             it.thumbnail(
-                requestBuilder.load(android.R.drawable.ic_menu_report_image)
+                requestBuilder.load(R.drawable.ic_place_holder)
             )
         }
         Box(

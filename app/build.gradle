@@ -104,4 +104,8 @@ dependencies {
 
     //Architectural Components
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1"
+
+    //Pagination
+    implementation "androidx.paging:paging-runtime:3.1.1"
+    implementation "androidx.paging:paging-compose:1.0.0-alpha17"
 }

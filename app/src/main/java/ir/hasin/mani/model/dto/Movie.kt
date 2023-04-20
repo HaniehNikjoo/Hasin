@@ -7,14 +7,14 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class MovieListResponse(
     @SerializedName("page") val page: String,
-    @SerializedName("results") val results: ArrayList<Result>,
+    @SerializedName("results") val movieResults: ArrayList<MovieResult>,
     @SerializedName("total_pages") val total_pages: String,
     @SerializedName("total_results") val total_results: String,
 ) : Parcelable
 
 
 @Parcelize
-data class Result(
+data class MovieResult(
     @SerializedName("adult") val adult: String,
     @SerializedName("backdrop_path") val backdrop_path: String,
     @SerializedName("genres") val genres: Genre,
