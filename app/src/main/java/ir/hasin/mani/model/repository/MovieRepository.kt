@@ -8,6 +8,8 @@ import javax.inject.Inject
 class MovieRepository @Inject constructor(
     private val movieWebApiDatasource: MovieWebApiDatasource
 ) {
+    suspend fun getMovieDetail(movie_id: String) = movieWebApiDatasource.getMovieDetail(movie_id)
+
     fun getMovieList() = Pager(
         config = PagingConfig(
             pageSize = 20,

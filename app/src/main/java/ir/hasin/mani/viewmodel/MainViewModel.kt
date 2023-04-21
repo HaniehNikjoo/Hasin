@@ -19,6 +19,7 @@ class MainViewModel @Inject constructor(
     private val repository: MovieRepository
 ) : ViewModel() {
 
-    fun getMovieList(): Flow<PagingData<MovieResult>> = repository.getMovieList().cachedIn(viewModelScope)
+    fun getMovieList(): Flow<PagingData<MovieResult>> =
+        repository.getMovieList().cachedIn(viewModelScope)
 
 }
