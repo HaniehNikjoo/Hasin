@@ -1,51 +1,50 @@
 package ir.hasin.mani.view
 
 import android.os.Bundle
-import android.provider.SyncStateContract
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import android.view.WindowManager
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.NavHostFragment
-import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import ir.hasin.mani.R
-import ir.hasin.mani.model.dto.ErrorResponse
+import ir.hasin.mani.model.dto.MovieResult
 import ir.hasin.mani.view.ui.ManiTheme
 import ir.hasin.mani.view.ui.MovieList
 import ir.hasin.mani.viewmodel.MainViewModel
-import retrofit2.HttpException
-import java.net.UnknownHostException
 
 @AndroidEntryPoint
 class MainFragment : Fragment() {
     private val viewModel: MainViewModel by viewModels()
+    private lateinit var movies: LazyPagingItems<MovieResult>
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View = ComposeView(inflater.context).apply {
+        val window = requireActivity().window
+        window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         setContent {
-            val movies = viewModel.getMovieList().collectAsLazyPagingItems()
+            movies = viewModel.getMovieList().collectAsLazyPagingItems()
             ManiTheme {
                 MovieList(
                     items = movies,
                     onItemClicked = {
-                    val bundle = Bundle()
-                    bundle.putString("ID", it)
-                    NavHostFragment.findNavController(this@MainFragment).navigate(R.id.action_nav_main_fragment_to_nav_detail_fragment,bundle)
+                        val bundle = Bundle()
+                        bundle.putString("ID", it)
+                        NavHostFragment.findNavController(this@MainFragment)
+                            .navigate(R.id.action_nav_main_fragment_to_nav_detail_fragment, bundle)
                     },
                 )
             }
         }
     }
-
 }

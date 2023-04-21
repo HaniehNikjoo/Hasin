@@ -1,50 +1,71 @@
 package ir.hasin.mani.view
 
+import android.os.Build
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.Toast
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.paging.LoadState
-import androidx.paging.compose.collectAsLazyPagingItems
-import com.google.gson.Gson
+import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
-import ir.hasin.mani.model.dto.ErrorResponse
+import ir.hasin.mani.model.dto.MovieDetailResponse
 import ir.hasin.mani.model.dto.Status
 import ir.hasin.mani.view.ui.ManiTheme
-import ir.hasin.mani.view.ui.MovieList
+import ir.hasin.mani.view.ui.MovieDetail
 import ir.hasin.mani.viewmodel.DetailViewModel
-import ir.hasin.mani.viewmodel.MainViewModel
-import retrofit2.HttpException
-import java.net.UnknownHostException
+
 
 @AndroidEntryPoint
 class DetailFragment : Fragment() {
     private val viewModel: DetailViewModel by viewModels()
+    private var item: MovieDetailResponse? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View = ComposeView(inflater.context).apply {
         setContent {
             val observeOnList by viewModel.resMovieDetail.collectAsState()
-            if (observeOnList?.status == Status.SUCCESS) {
-                val item = observeOnList.data
-            } else if (observeOnList?.status == Status.ERROR) {
+            if (observeOnList.status == Status.SUCCESS) {
+                item = observeOnList.data
+            } else if (observeOnList.status == Status.ERROR) {
                 Toast.makeText(requireContext(), observeOnList.message, Toast.LENGTH_LONG).show()
             }
 
             ManiTheme {
-
+                MovieDetail(item = item, onItemClicked = {
+                    findNavController().popBackStack()
+                })
             }
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel.getMovieDetail("594767")
+        val id = arguments?.getString("ID")
+        id?.let {
+            viewModel.getMovieDetail(id)
+        }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val w: Window = requireActivity().window
+        w.setFlags(
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        )
+        this.view?.isFocusableInTouchMode = true
+        this.view?.requestFocus()
+        this.view?.setOnKeyListener(object : View.OnKeyListener {
+            override fun onKey(v: View?, keyCode: Int, event: KeyEvent?): Boolean {
+                if (keyCode == KeyEvent.KEYCODE_BACK) {
+                    findNavController().popBackStack()
+                    return true
+                }
+                return false
+            }
+        })
     }
 }

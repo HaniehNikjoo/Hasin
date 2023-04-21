@@ -24,7 +24,7 @@ import ir.hasin.mani.R
 fun Header(title: String) {
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
         Row(Modifier.background(Color(0xFF222222))) {
-            Row(Modifier.padding(horizontal = 12.dp, vertical = 13.dp)) {
+            Row(Modifier.padding(horizontal = 12.dp, vertical = 12.dp)) {
                 Text(
                     text = title,
                     color = Color.White,
