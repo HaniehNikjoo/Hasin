@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
+import ir.hasin.mani.common.Constants.BUNDLE_ID
 import ir.hasin.mani.model.dto.MovieDetailResponse
 import ir.hasin.mani.model.dto.Status
 import ir.hasin.mani.view.ui.ManiTheme
@@ -43,7 +44,7 @@ class DetailFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val id = arguments?.getString("ID")
+        val id = arguments?.getString(BUNDLE_ID)
         id?.let {
             viewModel.getMovieDetail(id)
         }

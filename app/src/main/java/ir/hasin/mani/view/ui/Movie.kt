@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalView
@@ -35,13 +34,15 @@ import androidx.paging.compose.LazyPagingItems
 import com.bumptech.glide.Glide
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
 import com.google.gson.Gson
 import ir.hasin.mani.R
+import ir.hasin.mani.common.Constants.BASE_URL_IMG_W500
+import ir.hasin.mani.common.Constants.BASE_URL_IMG_ORG
 import ir.hasin.mani.model.dto.ErrorResponse
 import ir.hasin.mani.model.dto.MovieDetailResponse
 import ir.hasin.mani.model.dto.MovieResult
+import ir.hasin.mani.util.Utils
 import retrofit2.HttpException
 
 @Composable
@@ -62,19 +63,11 @@ fun MovieList(
                     when {
                         loadState.refresh is LoadState.Error -> {
                             val e = loadState.refresh as LoadState.Error
-                            val errorResponse = Gson().fromJson(
-                                (e.error as? HttpException)?.response()?.errorBody()?.string(),
-                                ErrorResponse::class.java
-                            )
-                            message = errorResponse?.status_message
+                            message = Utils.getMessageError(e.error)
                         }
                         loadState.append is LoadState.Error -> {
-                            val e = loadState.refresh as LoadState.Error
-                            val errorResponse = Gson().fromJson(
-                                (e.error as? HttpException)?.response()?.errorBody()?.string(),
-                                ErrorResponse::class.java
-                            )
-                            message = errorResponse?.status_message
+                            val e = loadState.append as LoadState.Error
+                            message = Utils.getMessageError(e.error)
                         }
                     }
                 }
@@ -135,7 +128,7 @@ fun MovieItem(
                 onItemClicked?.invoke(item.id)
             }) {
         GlideImage(
-            model = "https://image.tmdb.org/t/p/w500/${item.poster_path}",
+            model = BASE_URL_IMG_W500 + item.poster_path,
             contentDescription = null,
             contentScale = ContentScale.Fit,
             modifier = Modifier
@@ -193,7 +186,7 @@ fun MovieDetail(
                 .fillMaxHeight(3f)
         ) {
             GlideImage(
-                model = "https://image.tmdb.org/t/p/original/${item?.backdrop_path}",
+                model = BASE_URL_IMG_ORG + item?.backdrop_path,
                 contentDescription = null,
                 contentScale = ContentScale.FillBounds,
                 modifier = Modifier
@@ -248,7 +241,7 @@ fun MovieDetail(
                 .padding(start = 15.dp)
         ) {
             GlideImage(
-                model = "https://image.tmdb.org/t/p/original/${item?.poster_path}",
+                model = BASE_URL_IMG_ORG + item?.poster_path,
                 contentDescription = null,
                 contentScale = ContentScale.None,
                 modifier = Modifier

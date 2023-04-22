@@ -8,6 +8,7 @@ import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ir.hasin.mani.model.dto.*
 import ir.hasin.mani.model.repository.MovieRepository
+import ir.hasin.mani.util.Utils.getMessageError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -30,12 +31,7 @@ class DetailViewModel @Inject constructor(
             }.onSuccess {
                 _resMovieDetail.value = (Resource.success(it))
             }.onFailure {
-                val errorResponse = Gson().fromJson(
-                    (it as? HttpException)?.response()?.errorBody()?.string(),
-                    ErrorResponse::class.java
-                )
-                _resMovieDetail.value =
-                    (Resource.error(errorResponse?.status_message ?: it.message))
+                _resMovieDetail.value = Resource.error(getMessageError(it))
             }
         }
     }

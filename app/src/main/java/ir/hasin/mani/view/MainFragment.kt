@@ -16,6 +16,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import dagger.hilt.android.AndroidEntryPoint
 import ir.hasin.mani.R
+import ir.hasin.mani.common.Constants.BUNDLE_ID
 import ir.hasin.mani.model.dto.MovieResult
 import ir.hasin.mani.view.ui.ManiTheme
 import ir.hasin.mani.view.ui.MovieList
@@ -39,7 +40,7 @@ class MainFragment : Fragment() {
                     items = movies,
                     onItemClicked = {
                         val bundle = Bundle()
-                        bundle.putString("ID", it)
+                        bundle.putString(BUNDLE_ID, it)
                         NavHostFragment.findNavController(this@MainFragment)
                             .navigate(R.id.action_nav_main_fragment_to_nav_detail_fragment, bundle)
                     },
