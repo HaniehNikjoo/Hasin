@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -122,18 +123,19 @@ fun MovieList(
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun MovieItem(
-    item: MovieResult, onItemClicked: ((String) -> Unit)? = null
+    item: MovieResult? = null, onItemClicked: ((String) -> Unit)? = null
 ) {
     val requestBuilder = Glide.with(LocalView.current).asDrawable()
     Column(
         Modifier
+            .testTag("MovieItem")
             .wrapContentSize()
             .border(2.dp, Color(0xFF222222))
             .clickable {
-                onItemClicked?.invoke(item.id)
+                item?.let { onItemClicked?.invoke(it.id) }
             }) {
         GlideImage(
-            model = BASE_URL_IMG_W500 + item.poster_path,
+            model = BASE_URL_IMG_W500 + item?.poster_path,
             contentDescription = null,
             contentScale = ContentScale.Fit,
             modifier = Modifier
@@ -151,7 +153,7 @@ fun MovieItem(
                 .height(40.dp)
         ) {
             Text(
-                text = item.title,
+                text = item?.title ?: "",
                 color = Color.White,
                 style = TextStyle(
                     fontWeight = FontWeight.Bold
