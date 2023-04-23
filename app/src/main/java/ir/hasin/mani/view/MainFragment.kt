@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.NavHostFragment
+import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import dagger.hilt.android.AndroidEntryPoint
@@ -21,11 +22,13 @@ import ir.hasin.mani.model.dto.MovieResult
 import ir.hasin.mani.view.ui.ManiTheme
 import ir.hasin.mani.view.ui.MovieList
 import ir.hasin.mani.viewmodel.MainViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.last
 
 @AndroidEntryPoint
 class MainFragment : Fragment() {
     private val viewModel: MainViewModel by viewModels()
-    private lateinit var movies: LazyPagingItems<MovieResult>
+    private lateinit var movies: Flow<PagingData<MovieResult>>
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -34,10 +37,9 @@ class MainFragment : Fragment() {
         window.clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
         setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         setContent {
-            movies = viewModel.getMovieList().collectAsLazyPagingItems()
             ManiTheme {
                 MovieList(
-                    items = movies,
+                    data = movies,
                     onItemClicked = {
                         val bundle = Bundle()
                         bundle.putString(BUNDLE_ID, it)
@@ -47,5 +49,10 @@ class MainFragment : Fragment() {
                 )
             }
         }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        movies = viewModel.getMovieList()
     }
 }

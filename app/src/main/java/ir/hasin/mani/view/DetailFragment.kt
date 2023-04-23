@@ -37,7 +37,7 @@ class DetailFragment : Fragment() {
             ManiTheme {
                 MovieDetail(item = item, onItemClicked = {
                     findNavController().popBackStack()
-                })
+                }, isLoading = observeOnList.status == Status.LOADING)
             }
         }
     }

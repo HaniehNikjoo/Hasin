@@ -1,17 +1,19 @@
 package ir.hasin.mani.view.ui
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterHorizontally
+import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -30,26 +32,28 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.bumptech.glide.Glide
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-import com.bumptech.glide.request.RequestOptions
-import com.google.gson.Gson
 import ir.hasin.mani.R
-import ir.hasin.mani.common.Constants.BASE_URL_IMG_W500
 import ir.hasin.mani.common.Constants.BASE_URL_IMG_ORG
-import ir.hasin.mani.model.dto.ErrorResponse
+import ir.hasin.mani.common.Constants.BASE_URL_IMG_W500
+import ir.hasin.mani.model.dto.Genre
 import ir.hasin.mani.model.dto.MovieDetailResponse
 import ir.hasin.mani.model.dto.MovieResult
 import ir.hasin.mani.util.Utils
-import retrofit2.HttpException
+import kotlinx.coroutines.flow.Flow
 
 @Composable
 fun MovieList(
-    items: LazyPagingItems<MovieResult>,
+    data: Flow<PagingData<MovieResult>>,
     onItemClicked: ((String) -> Unit)? = null,
 ) {
+    val listState: LazyGridState = rememberLazyGridState()
+    val items: LazyPagingItems<MovieResult> = data.collectAsLazyPagingItems()
     Column {
         Header(title = stringResource(R.string.popular))
         Box(
@@ -86,7 +90,8 @@ fun MovieList(
                     .fillMaxSize()
                     .background(Color(0xFF222222))
             ) {
-                LazyVerticalGrid(columns = GridCells.Fixed(count = 3),
+                LazyVerticalGrid(state = listState,
+                    columns = GridCells.Fixed(count = 3),
                     modifier = Modifier
                         .wrapContentHeight()
                         .fillMaxWidth()
@@ -103,7 +108,7 @@ fun MovieList(
                         }
                     })
             }
-            if (items.loadState.refresh == LoadState.Loading) CircularProgressIndicator(
+            if (items.itemCount == 0 && items.loadState.refresh == LoadState.Loading) CircularProgressIndicator(
                 modifier = Modifier
                     .size(60.dp)
                     .padding(10.dp)
@@ -149,7 +154,7 @@ fun MovieItem(
                 text = item.title,
                 color = Color.White,
                 style = TextStyle(
-                    fontFamily = iranSansFamily, fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold
                 ),
                 fontSize = 12.sp,
                 modifier = Modifier
@@ -165,94 +170,325 @@ fun MovieItem(
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun MovieDetail(
-    item: MovieDetailResponse?, onItemClicked: (() -> Unit)
+    item: MovieDetailResponse?, onItemClicked: (() -> Unit), isLoading: Boolean
 ) {
     val constraints = ConstraintSet {
-        val topGuideline = createGuidelineFromTop(0.22f)
+        val topGuideline = createGuidelineFromTop(0.25f)
+        val topGuideline2 = createGuidelineFromTop(0.32f)
 
         val posterBox = createRefFor("posterBox")
+        val textBox = createRefFor("textBox")
+        val infoBox = createRefFor("infoBox")
 
         constrain(posterBox) {
             top.linkTo(topGuideline)
             start.linkTo(parent.start)
         }
+        constrain(textBox) {
+            top.linkTo(topGuideline2)
+            start.linkTo(posterBox.end)
+        }
+        constrain(infoBox) {
+            top.linkTo(posterBox.bottom)
+            start.linkTo(parent.start)
+        }
     }
 
-    ConstraintLayout(constraints, modifier = Modifier.fillMaxSize()) {
-        val requestBuilder = Glide.with(LocalView.current).asDrawable()
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(3f)
-        ) {
-            GlideImage(
-                model = BASE_URL_IMG_ORG + item?.backdrop_path,
-                contentDescription = null,
-                contentScale = ContentScale.FillBounds,
+    Box(Modifier.fillMaxSize()) {
+        ConstraintLayout(constraints, modifier = Modifier.matchParentSize()) {
+            val requestBuilder = Glide.with(LocalView.current).asDrawable()
+            val requestBuilder2 = Glide.with(LocalView.current).asDrawable()
+            Box(
                 modifier = Modifier
-                    .fillMaxHeight(.33f)
                     .fillMaxWidth()
+                    .fillMaxHeight(3f)
             ) {
-                it.thumbnail(
-                    requestBuilder.load(R.drawable.ic_place_holder)
-                )
+                GlideImage(
+                    model = BASE_URL_IMG_ORG + item?.backdrop_path,
+                    contentDescription = null,
+                    contentScale = ContentScale.FillBounds,
+                    modifier = Modifier
+                        .fillMaxHeight(.33f)
+                        .fillMaxWidth()
+                ) {
+                    it.thumbnail(
+                        requestBuilder2.load(R.drawable.ic_place_holder_backdrop)
+                    )
+                }
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .fillMaxHeight()
+                        .padding(top = 30.dp)
+                        .padding(horizontal = 15.dp)
+                ) {
+                    Image(
+                        modifier = Modifier
+                            .wrapContentSize()
+                            .clickable {
+                                onItemClicked.invoke()
+                            },
+                        painter = painterResource(id = R.drawable.ic_back),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        colorFilter = ColorFilter.tint(Color(0xFFEEEEEE))
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Image(
+                        modifier = Modifier.wrapContentSize(),
+                        painter = painterResource(id = R.drawable.ic_share),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        colorFilter = ColorFilter.tint(Color(0xFFEEEEEE))
+                    )
+                    Spacer(modifier = Modifier.width(15.dp))
+                    Image(
+                        modifier = Modifier.wrapContentSize(),
+                        painter = painterResource(id = R.drawable.ic_favorite_border),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        colorFilter = ColorFilter.tint(Color(0xFFEEEEEE))
+                    )
+                }
             }
-            Row(
+            Box(
                 modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .fillMaxHeight()
-                    .padding(top = 30.dp)
-                    .padding(horizontal = 15.dp)
+                    .layoutId("posterBox")
+                    .fillMaxHeight(.3f)
+                    .fillMaxWidth(.4f)
+                    .padding(start = 15.dp)
             ) {
-                Image(
+                GlideImage(
+                    model = BASE_URL_IMG_W500 + item?.poster_path,
+                    contentDescription = null,
+                    contentScale = ContentScale.None,
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .clip(RoundedCornerShape(8.dp))
+                ) {
+                    it.thumbnail(
+                        requestBuilder.load(R.drawable.ic_place_holder)
+                    )
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .layoutId("textBox")
+                    .fillMaxWidth(.5f)
+                    .padding(top = 15.dp, start = 15.dp)
+            ) {
+                Text(
+                    text = item?.title ?: "", color = Color.Black, style = TextStyle(
+                        fontWeight = FontWeight.Bold
+                    ), fontSize = 16.sp, modifier = Modifier.wrapContentSize()
+                )
+                LazyVerticalGrid(columns = GridCells.Adaptive(70.dp),
                     modifier = Modifier
                         .wrapContentSize()
-                        .clickable {
-                            onItemClicked.invoke()
-                        },
-                    painter = painterResource(id = R.drawable.ic_back),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    colorFilter = ColorFilter.tint(Color(0xFFEEEEEE))
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                Image(
-                    modifier = Modifier.wrapContentSize(),
-                    painter = painterResource(id = R.drawable.ic_share),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    colorFilter = ColorFilter.tint(Color(0xFFEEEEEE))
-                )
-                Spacer(modifier = Modifier.width(15.dp))
-                Image(
-                    modifier = Modifier.wrapContentSize(),
-                    painter = painterResource(id = R.drawable.ic_favorite_border),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    colorFilter = ColorFilter.tint(Color(0xFFEEEEEE))
-                )
+                        .padding(top = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(3.dp),
+                    horizontalArrangement = Arrangement.spacedBy(3.dp),
+                    content = {
+                        items(item?.genres?.size ?: 0) { index ->
+                            item?.genres?.get(index)?.let {
+                                GenreItem(
+                                    it
+                                )
+                            }
+                        }
+                    })
             }
-        }
-        Box(
-            modifier = Modifier
-                .layoutId("posterBox")
-                .fillMaxHeight(.3f)
-                .fillMaxWidth(.4f)
-                .padding(start = 15.dp)
-        ) {
-            GlideImage(
-                model = BASE_URL_IMG_ORG + item?.poster_path,
-                contentDescription = null,
-                contentScale = ContentScale.None,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .clip(RoundedCornerShape(8.dp))
-            ) {
-                it.thumbnail(
-                    requestBuilder.load(R.drawable.ic_place_holder)
-                )
-            }
-        }
-    }
 
+            Column(
+                modifier = Modifier.layoutId("infoBox")
+            ) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Divider(
+                    modifier = Modifier
+                        .height(1.dp)
+                        .background(Color.LightGray)
+                )
+
+                Row(
+                    Modifier
+                        .padding(vertical = 10.dp)
+                        .fillMaxWidth(.9f)
+                        .align(CenterHorizontally)
+                ) {
+                    Column(
+                        Modifier
+                            .weight(1f)
+                            .padding(top = 5.dp)
+                    ) {
+                        Row(Modifier.align(CenterHorizontally)) {
+                            Text(
+                                text = item?.vote_average ?: "",
+                                color = Color.DarkGray,
+                                style = TextStyle(
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                fontSize = 12.sp,
+                                modifier = Modifier.align(CenterVertically),
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_baseline_star_rate),
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .align(CenterVertically),
+                                contentDescription = null,
+                                colorFilter = ColorFilter.tint(Color.DarkGray)
+                            )
+                        }
+                        Text(
+                            text = "${item?.vote_count ?: ""} votes ",
+                            color = Color.Gray,
+                            style = TextStyle(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            fontSize = 12.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .align(CenterHorizontally)
+                                .padding(top = 5.dp)
+                        )
+                    }
+                    Column(
+                        Modifier
+                            .weight(1f)
+                            .padding(top = 5.dp)
+                    ) {
+                        Row(Modifier.align(CenterHorizontally)) {
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_baseline_language),
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .align(CenterVertically),
+                                contentDescription = null,
+                                colorFilter = ColorFilter.tint(Color.DarkGray)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = item?.original_language ?: "",
+                                color = Color.DarkGray,
+                                style = TextStyle(
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                fontSize = 12.sp,
+                                modifier = Modifier.align(CenterVertically),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                        Text(
+                            text = "Language",
+                            color = Color.Gray,
+                            style = TextStyle(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            fontSize = 12.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .align(CenterHorizontally)
+                                .padding(top = 5.dp)
+                        )
+                    }
+                    Column(
+                        Modifier
+                            .weight(1f)
+                            .padding(top = 5.dp)
+                    ) {
+                        Row(Modifier.align(CenterHorizontally)) {
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_baseline_av_timer),
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .align(CenterVertically),
+                                contentDescription = null,
+                                colorFilter = ColorFilter.tint(Color.DarkGray)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = item?.release_date ?: "",
+                                color = Color.DarkGray,
+                                style = TextStyle(
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                fontSize = 12.sp,
+                                modifier = Modifier.align(CenterVertically),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                        Text(
+                            text = "Release date",
+                            color = Color.Gray,
+                            style = TextStyle(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            fontSize = 12.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .align(CenterHorizontally)
+                                .padding(top = 5.dp)
+                        )
+                    }
+                }
+
+                Divider(
+                    modifier = Modifier
+                        .height(1.dp)
+                        .background(Color.LightGray)
+                )
+
+                Text(
+                    text = "Overview",
+                    color = Color.DarkGray,
+                    style = TextStyle(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .padding(top = 30.dp, start = 10.dp, end = 10.dp)
+                        .fillMaxWidth()
+                )
+                Column(
+                    Modifier
+                        .fillMaxHeight(.3f)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    Text(
+                        text = item?.overview ?: "", color = Color.Gray, style = TextStyle(
+                            fontWeight = FontWeight.Normal
+                        ), fontSize = 12.sp, modifier = Modifier.padding(10.dp)
+                    )
+                }
+            }
+        }
+        if (isLoading) CircularProgressIndicator(
+            modifier = Modifier
+                .size(40.dp)
+                .align(Alignment.Center), color = Color.DarkGray
+        )
+    }
+}
+
+@Composable
+fun GenreItem(item: Genre) {
+    Text(
+        text = item.name,
+        color = Color.Gray,
+        style = TextStyle(
+            fontWeight = FontWeight.Bold
+        ),
+        fontSize = 12.sp,
+        modifier = Modifier
+            .border(
+                1.dp, Color.Gray, RoundedCornerShape(50.dp)
+            )
+            .padding(horizontal = 3.dp, vertical = 3.dp)
+            .wrapContentWidth(),
+        textAlign = TextAlign.Center
+
+    )
 }

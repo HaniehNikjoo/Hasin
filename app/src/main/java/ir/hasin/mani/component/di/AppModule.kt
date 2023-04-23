@@ -6,6 +6,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import ir.hasin.mani.BuildConfig
 import ir.hasin.mani.model.datasource.MovieWebApiDatasource
+import ir.hasin.mani.model.repository.MovieRepository
+import ir.hasin.mani.model.repository.MovieRepositoryImpl
 import ir.hasin.mani.util.getOkHttpClient
 import ir.hasin.mani.util.getRetrofitClient
 import okhttp3.OkHttpClient
@@ -22,9 +24,11 @@ object AppModule {
     fun provideBaseUrl(): String = BuildConfig.BASE_URL
 
     @Provides
+    @Singleton
     fun provideOkHttpClient(): OkHttpClient = getOkHttpClient()
 
     @Provides
+    @Singleton
     fun provideRetrofit(
         okHttpClient: OkHttpClient,
         @Named("BASE_URL") BASE_URL: String,
@@ -34,5 +38,10 @@ object AppModule {
     @Singleton
     fun getUserWebApiDatasource(retrofit: Retrofit): MovieWebApiDatasource =
         retrofit.create(MovieWebApiDatasource::class.java)
+
+    @Provides
+    @Singleton
+    fun provideMovieRepository(datasource: MovieWebApiDatasource): MovieRepository =
+        MovieRepositoryImpl(datasource)
 
 }

@@ -1,4 +1,4 @@
-package ir.hasin.mani.model.repository
+package ir.hasin.mani.model.repository.pagination
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState

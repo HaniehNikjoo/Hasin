@@ -2,17 +2,16 @@ package ir.hasin.mani.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagingData
-import androidx.paging.cachedIn
-import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
-import ir.hasin.mani.model.dto.*
+import ir.hasin.mani.model.dto.MovieDetailResponse
+import ir.hasin.mani.model.dto.Resource
+import ir.hasin.mani.model.dto.Status
 import ir.hasin.mani.model.repository.MovieRepository
 import ir.hasin.mani.util.Utils.getMessageError
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,7 +28,7 @@ class DetailViewModel @Inject constructor(
             kotlin.runCatching {
                 repository.getMovieDetail(id)
             }.onSuccess {
-                _resMovieDetail.value = (Resource.success(it))
+                _resMovieDetail.value = Resource.success(it)
             }.onFailure {
                 _resMovieDetail.value = Resource.error(getMessageError(it))
             }

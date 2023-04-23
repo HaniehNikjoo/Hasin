@@ -1,21 +1,11 @@
 package ir.hasin.mani.model.repository
 
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import ir.hasin.mani.model.datasource.MovieWebApiDatasource
-import javax.inject.Inject
+import androidx.paging.PagingData
+import ir.hasin.mani.model.dto.MovieDetailResponse
+import ir.hasin.mani.model.dto.MovieResult
+import kotlinx.coroutines.flow.Flow
 
-class MovieRepository @Inject constructor(
-    private val movieWebApiDatasource: MovieWebApiDatasource
-) {
-    suspend fun getMovieDetail(movie_id: String) = movieWebApiDatasource.getMovieDetail(movie_id)
-
-    fun getMovieList() = Pager(
-        config = PagingConfig(
-            pageSize = 20,
-        ),
-        pagingSourceFactory = {
-            MoviePagingSource(movieWebApiDatasource)
-        }
-    ).flow
+interface MovieRepository {
+    suspend fun getMovieDetail(movie_id: String) : MovieDetailResponse
+    fun getMovieList() : Flow<PagingData<MovieResult>>
 }
